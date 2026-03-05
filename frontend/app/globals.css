@@ -1,0 +1,185 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Static colour tokens ─────────────────────────────── */
+:root {
+  --pixel-black: #0b0b0b;
+  --neon-yellow: #ffd600;
+  --hot-pink: #ff2e88;
+  --electric-blue: #2edbff;
+  --cream-white: #f5f1e8;
+}
+
+/* ── Dark theme (default) ─────────────────────────────── */
+[data-theme="dark"] {
+  --bg:        #0b0b0b;
+  --bg2:       #111111;
+  --surface:   #161616;
+  --text:      #f5f1e8;
+  --text-dim:  #888;
+  --accent1:   #ffd600;  /* neon yellow */
+  --accent2:   #2edbff;  /* electric blue */
+  --accent3:   #ff2e88;  /* hot pink */
+  --border:    #ffd600;
+  --monitor-bg: #0d0d0d;
+  --screen-bg:  #050510;
+  --header-bg:  #111;
+  --scrollbar:  #ffd600;
+}
+
+/* ── Light "Vintage Cream" theme ──────────────────────── */
+[data-theme="light"] {
+  --bg:        #eae6de;  /* warm off-white grey */
+  --bg2:       #e0dbd2;
+  --surface:   #f4f1ec;  /* slightly lighter cream */
+  --text:      #1c1814;  /* dark ink */
+  --text-dim:  #7a7268;
+  --accent1:   #d4006a;  /* deep pixel-pink */
+  --accent2:   #0068b8;  /* retro blue */
+  --accent3:   #c28800;  /* amber-yellow */
+  --border:    #d4006a;
+  --monitor-bg: #f4f1ec;
+  --screen-bg:  #dce8f2;  /* pale blue screen */
+  --header-bg:  #e0dbd2;
+  --scrollbar:  #d4006a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: "Share Tech Mono", monospace;
+  overflow-x: hidden;
+  transition: background-color 0.25s, color 0.25s;
+}
+
+/* ── Pixel noise overlay ──────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+}
+
+/* ── Pixel border utility ─────────────────────────────── */
+.pixel-border {
+  border: 2px solid var(--cream-white);
+  box-shadow: 4px 4px 0 var(--cream-white);
+}
+
+.pixel-border-yellow {
+  border: 2px solid var(--neon-yellow);
+  box-shadow: 3px 3px 0 var(--neon-yellow);
+}
+
+.pixel-border-pink {
+  border: 2px solid var(--hot-pink);
+  box-shadow: 3px 3px 0 var(--hot-pink);
+}
+
+.pixel-border-blue {
+  border: 2px solid var(--electric-blue);
+  box-shadow: 3px 3px 0 var(--electric-blue);
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+}
+
+/* ── Scanline effect for monitor ─────────────────────── */
+.scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+}
+
+/* ── Globe container ─────────────────────────────────── */
+.globe-wrapper canvas {
+  outline: none;
+}
+
+/* ── Pixel button 3-D shadow ──────────────────────────── */
+.btn-pixel-3d {
+  box-shadow: 3px 3px 0 currentColor;
+  transition: box-shadow 0.08s, transform 0.08s;
+}
+.btn-pixel-3d:hover {
+  box-shadow: 4px 4px 0 currentColor;
+  transform: translate(-1px, -1px);
+}
+.btn-pixel-3d:active {
+  box-shadow: 1px 1px 0 currentColor;
+  transform: translate(2px, 2px);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Button styles ───────────────────────────────────── */
+.btn-pixel {
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  padding: 10px 16px;
+  border: 2px solid currentColor;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  letter-spacing: 0.05em;
+}
+
+.btn-pixel:hover {
+  background: var(--neon-yellow);
+  color: var(--pixel-black);
+  border-color: var(--neon-yellow);
+}
+
+/* ── Badge ───────────────────────────────────────────── */
+.badge-online {
+  background: var(--electric-blue);
+  color: var(--pixel-black);
+}
+.badge-offline {
+  background: var(--neon-yellow);
+  color: var(--pixel-black);
+}
+.badge-hybrid {
+  background: var(--hot-pink);
+  color: var(--pixel-black);
+}
+
+/* ── Card ────────────────────────────────────────────── */
+.hack-card {
+  background: var(--surface);
+  border: 2px solid var(--text-dim);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.hack-card:hover {
+  border-color: var(--accent1);
+  box-shadow: 4px 4px 0 var(--accent1);
+}
