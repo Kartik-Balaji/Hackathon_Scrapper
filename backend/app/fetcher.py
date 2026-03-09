@@ -199,6 +199,16 @@ async def fetch_all_events() -> list[dict]:
     # Fetch Devpost via built-in httpx fetcher
     devpost_events = await fetch_devpost()
 
+    # Fetch Unstop via its API scraper
+    unstop_events: list[dict] = []
+    try:
+        from scraper.unstop import UnstopScraper
+        async with UnstopScraper() as us_scraper:
+            unstop_events = await us_scraper.scrape()
+        print(f"[Fetcher] Unstop: {len(unstop_events)} events")
+    except Exception as e:
+        print(f"[Fetcher] Unstop failed (non-fatal): {e}")
+
     # Fetch HackerEarth via its scraper
     hackerearth_events: list[dict] = []
     try:
@@ -209,7 +219,7 @@ async def fetch_all_events() -> list[dict]:
     except Exception as e:
         print(f"[Fetcher] HackerEarth failed (non-fatal): {e}")
 
-    all_events = devpost_events + hackerearth_events
+    all_events = devpost_events + unstop_events + hackerearth_events
 
     # Deduplicate by (source, url)
     seen: set[str] = set()
