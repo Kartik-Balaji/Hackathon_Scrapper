@@ -11,10 +11,11 @@ async def list_events(
     q: Optional[str] = Query(None),
     mode: Optional[str] = Query(None),
     has_ppt: Optional[bool] = Query(None),
+    source: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=200),
 ):
-    events, total = await crud.get_events(q=q, mode=mode, has_ppt=has_ppt, page=page, page_size=page_size)
+    events, total = await crud.get_events(q=q, mode=mode, has_ppt=has_ppt, source=source, page=page, page_size=page_size)
     meta = await crud.get_meta()
     return EventsResponse(
         events=events,

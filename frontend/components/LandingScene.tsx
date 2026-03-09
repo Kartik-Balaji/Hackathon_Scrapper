@@ -38,11 +38,13 @@ function ChannelList({
   const [filter, setFilter] = useState<"all" | "online" | "offline" | "hybrid">("all");
   const [search, setSearch] = useState("");
   const [pptFilter, setPptFilter] = useState<"all" | "yes" | "no">("all");
+  const [sourceFilter, setSourceFilter] = useState<"all" | "devpost" | "unstop" | "hackerearth">("all");
 
   const filtered = events.filter((e) => {
     if (filter !== "all" && e.mode !== filter) return false;
     if (pptFilter === "yes" && !e.has_ppt_round) return false;
     if (pptFilter === "no" && e.has_ppt_round) return false;
+    if (sourceFilter !== "all" && e.source !== sourceFilter) return false;
     if (search && !e.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -102,7 +104,32 @@ function ChannelList({
         ))}
       </div>
 
-      {/* PPT filter row */}
+      {/* Source filter row */}
+      <div style={{ display: "flex", gap: 5, flexShrink: 0, flexWrap: "wrap" }}>
+        {([
+          { label: "ALL",        value: "all",         color: "var(--accent1)" },
+          { label: "DEVPOST",    value: "devpost",      color: "#FF6B35" },
+          { label: "UNSTOP",     value: "unstop",       color: "#A78BFA" },
+          { label: "H.EARTH",   value: "hackerearth",  color: "#34D399" },
+        ] as const).map(({ label, value, color }) => (
+          <button
+            key={value}
+            onClick={() => setSourceFilter(value)}
+            style={{
+              fontFamily: '"Press Start 2P", monospace', fontSize: 6, padding: "4px 7px",
+              border: `2px solid ${sourceFilter === value ? color : "var(--text-dim)"}`,
+              color: sourceFilter === value ? "var(--bg)" : "var(--text-dim)",
+              background: sourceFilter === value ? color : "transparent",
+              cursor: "pointer",
+              boxShadow: sourceFilter === value ? "3px 3px 0 rgba(0,0,0,0.4)" : "2px 2px 0 rgba(0,0,0,0.3)",
+              transform: sourceFilter === value ? "translate(-1px,-1px)" : "none",
+              transition: "all 0.1s",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
         {([
           { label: "ALL",  value: "all" },

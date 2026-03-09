@@ -5,6 +5,7 @@ import { fetchEvents, HackEvent } from "@/lib/api";
 import Filters from "./Filters";
 
 type PptFilter = "all" | "yes" | "no";
+type SourceFilter = "all" | "devpost" | "unstop" | "hackerearth";
 
 const MODE_COLOR: Record<string, string> = {
   offline: "#FFD600",
@@ -25,6 +26,7 @@ export default function ListView({ onSelectEvent }: Props) {
   const [mode, setMode] = useState("");
   const [query, setQuery] = useState("");
   const [pptFilter, setPptFilter] = useState<PptFilter>("all");
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 18;
 
@@ -32,12 +34,13 @@ export default function ListView({ onSelectEvent }: Props) {
     pptFilter === "yes" ? true : pptFilter === "no" ? false : undefined;
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["events", mode, query, pptFilter, page],
+    queryKey: ["events", mode, query, pptFilter, sourceFilter, page],
     queryFn: () =>
       fetchEvents({
         q: query || undefined,
         mode: mode || undefined,
         has_ppt: hasPpt,
+        source: sourceFilter !== "all" ? sourceFilter : undefined,
         page,
         page_size: PAGE_SIZE,
       }),
@@ -65,9 +68,11 @@ export default function ListView({ onSelectEvent }: Props) {
         mode={mode}
         query={query}
         pptFilter={pptFilter}
+        sourceFilter={sourceFilter}
         onModeChange={(m) => { setMode(m); setPage(1); }}
         onQueryChange={(q) => { setQuery(q); setPage(1); }}
         onPptChange={(p) => { setPptFilter(p); setPage(1); }}
+        onSourceChange={(s) => { setSourceFilter(s); setPage(1); }}
         total={total}
       />
 
