@@ -4,9 +4,12 @@ from typing import Optional, Tuple, List
 import app.database as cache
 
 
-def _matches_filter(ev: dict, q: Optional[str], mode: Optional[str]) -> bool:
+def _matches_filter(ev: dict, q: Optional[str], mode: Optional[str], has_ppt: Optional[bool] = None) -> bool:
     if mode and mode.lower() not in ("", "all"):
         if (ev.get("mode") or "").lower() != mode.lower():
+            return False
+    if has_ppt is not None:
+        if ev.get("has_ppt_round") != has_ppt:
             return False
     if q:
         pattern = re.compile(re.escape(q), re.IGNORECASE)
@@ -24,12 +27,13 @@ def _matches_filter(ev: dict, q: Optional[str], mode: Optional[str]) -> bool:
 async def get_events(
     q: Optional[str] = None,
     mode: Optional[str] = None,
+    has_ppt: Optional[bool] = None,
     page: int = 1,
     page_size: int = 20,
 ) -> Tuple[List[dict], int]:
     await cache.ensure_fresh()
     all_events = cache.get_events_raw()
-    filtered = [e for e in all_events if _matches_filter(e, q, mode)]
+    filtered = [e for e in all_events if _matches_filter(e, q, mode, has_ppt)]
     # Sort by start_date ascending, None last
     filtered.sort(key=lambda e: e.get("start_date") or datetime.max)
     total = len(filtered)

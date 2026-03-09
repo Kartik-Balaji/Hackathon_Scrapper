@@ -62,6 +62,20 @@ def _infer_mode(h: dict) -> str:
     return "offline"
 
 
+# Shared across all scrapers — import this from fetcher
+PPT_KEYWORDS = frozenset([
+    "presentation", "ppt", "pitch", "pitching", "demo day", "demo-day",
+    "slide deck", "slides", "present your", "present their", "final round presentation",
+])
+
+
+def detect_ppt_round(*text_fields: str | None) -> bool:
+    """Return True if any of the text fields mention a PPT/presentation round."""
+    combined = " ".join(f for f in text_fields if f).lower()
+    return any(kw in combined for kw in PPT_KEYWORDS)
+
+
+
 async def _geocode(client: httpx.AsyncClient, location: str) -> tuple[float, float] | None:
     key = location.strip().lower()
     if key in _geo_cache:
@@ -132,6 +146,13 @@ async def _fetch_devpost_page(
         else:
             prize = None
 
+        has_ppt = detect_ppt_round(
+            h.get("title"),
+            h.get("requirements"),
+            h.get("round_prize_amounts"),  # sometimes mentions rounds
+            " ".join(tags),
+        )
+
         results.append({
             "id": _uid("devpost", h.get("url", h.get("title", ""))),
             "source": "devpost",
@@ -148,6 +169,7 @@ async def _fetch_devpost_page(
             "image_url": h.get("thumbnail_url"),
             "latitude": lat,
             "longitude": lon,
+            "has_ppt_round": has_ppt,
             "status": "active",
         })
 
@@ -173,12 +195,26 @@ async def fetch_devpost(max_pages: int = 5) -> list[dict]:
 async def fetch_all_events() -> list[dict]:
     """Fetch from all configured sources and merge."""
     print("[Fetcher] Starting live fetch...")
+
+    # Fetch Devpost via built-in httpx fetcher
     devpost_events = await fetch_devpost()
+
+    # Fetch HackerEarth via its scraper
+    hackerearth_events: list[dict] = []
+    try:
+        from scraper.hackerearth import HackerEarthScraper
+        async with HackerEarthScraper() as he_scraper:
+            hackerearth_events = await he_scraper.scrape()
+        print(f"[Fetcher] HackerEarth: {len(hackerearth_events)} events")
+    except Exception as e:
+        print(f"[Fetcher] HackerEarth failed (non-fatal): {e}")
+
+    all_events = devpost_events + hackerearth_events
 
     # Deduplicate by (source, url)
     seen: set[str] = set()
     merged: list[dict] = []
-    for ev in devpost_events:
+    for ev in all_events:
         key = f"{ev['source']}::{ev['url']}"
         if key not in seen:
             seen.add(key)

@@ -20,6 +20,7 @@ class EventOut(BaseModel):
     prize_pool: Optional[str] = None
     participants: Optional[str] = None
     image_url: Optional[str] = None
+    has_ppt_round: Optional[bool] = None
     status: str = "active"
 
     model_config = {"from_attributes": True}

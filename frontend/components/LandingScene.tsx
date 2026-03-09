@@ -37,9 +37,12 @@ function ChannelList({
 }) {
   const [filter, setFilter] = useState<"all" | "online" | "offline" | "hybrid">("all");
   const [search, setSearch] = useState("");
+  const [pptFilter, setPptFilter] = useState<"all" | "yes" | "no">("all");
 
   const filtered = events.filter((e) => {
     if (filter !== "all" && e.mode !== filter) return false;
+    if (pptFilter === "yes" && !e.has_ppt_round) return false;
+    if (pptFilter === "no" && e.has_ppt_round) return false;
     if (search && !e.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -99,6 +102,32 @@ function ChannelList({
         ))}
       </div>
 
+      {/* PPT filter row */}
+      <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+        {([
+          { label: "ALL",  value: "all" },
+          { label: "📊 PPT", value: "yes" },
+          { label: "⚡ NO PPT", value: "no" },
+        ] as const).map(({ label, value }) => (
+          <button
+            key={value}
+            onClick={() => setPptFilter(value)}
+            style={{
+              fontFamily: '"Press Start 2P", monospace', fontSize: 6, padding: "4px 7px",
+              border: `2px solid ${pptFilter === value ? (value === "yes" ? "#FF2E88" : value === "no" ? "#2EDBFF" : "var(--accent1)") : "var(--text-dim)"}`,
+              color: pptFilter === value ? "var(--bg)" : "var(--text-dim)",
+              background: pptFilter === value ? (value === "yes" ? "#FF2E88" : value === "no" ? "#2EDBFF" : "var(--accent1)") : "transparent",
+              cursor: "pointer",
+              boxShadow: pptFilter === value ? "3px 3px 0 rgba(0,0,0,0.4)" : "2px 2px 0 rgba(0,0,0,0.3)",
+              transform: pptFilter === value ? "translate(-1px,-1px)" : "none",
+              transition: "all 0.1s",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {/* Scrollable event list */}
       <div style={{ flex: 1, overflowY: "auto", paddingRight: 4 }}>
         {filtered.length === 0 ? (
@@ -118,12 +147,21 @@ function ChannelList({
               onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--accent1)")}
               onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--text-dim)")}
             >
-              {/* Mode dot */}
-              <div style={{
-                width: 8, height: 8, marginTop: 4, flexShrink: 0,
-                background: MODE_COLORS[ev.mode ?? "online"] ?? "#2EDBFF",
-                boxShadow: `0 0 5px ${MODE_COLORS[ev.mode ?? "online"] ?? "#2EDBFF"}`,
-              }} />
+              {/* Mode dot + PPT badge */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flexShrink: 0 }}>
+                <div style={{
+                  width: 8, height: 8,
+                  background: MODE_COLORS[ev.mode ?? "online"] ?? "#2EDBFF",
+                  boxShadow: `0 0 5px ${MODE_COLORS[ev.mode ?? "online"] ?? "#2EDBFF"}`,
+                }} />
+                {ev.has_ppt_round && (
+                  <div style={{
+                    width: 8, height: 8, background: "#FF2E88",
+                    boxShadow: "0 0 4px #FF2E88",
+                    fontSize: 5, display: "flex", alignItems: "center", justifyContent: "center",
+                  }} title="Has PPT round" />
+                )}
+              </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{
                   fontFamily: '"Share Tech Mono", monospace', fontSize: 10, color: "var(--text)",

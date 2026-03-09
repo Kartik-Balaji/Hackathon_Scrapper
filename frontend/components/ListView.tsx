@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEvents, HackEvent } from "@/lib/api";
 import Filters from "./Filters";
 
+type PptFilter = "all" | "yes" | "no";
+
 const MODE_COLOR: Record<string, string> = {
   offline: "#FFD600",
   hybrid: "#FF2E88",
@@ -22,12 +24,23 @@ function formatDate(d: string | null) {
 export default function ListView({ onSelectEvent }: Props) {
   const [mode, setMode] = useState("");
   const [query, setQuery] = useState("");
+  const [pptFilter, setPptFilter] = useState<PptFilter>("all");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 18;
 
+  const hasPpt =
+    pptFilter === "yes" ? true : pptFilter === "no" ? false : undefined;
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["events", mode, query, page],
-    queryFn: () => fetchEvents({ q: query || undefined, mode: mode || undefined, page, page_size: PAGE_SIZE }),
+    queryKey: ["events", mode, query, pptFilter, page],
+    queryFn: () =>
+      fetchEvents({
+        q: query || undefined,
+        mode: mode || undefined,
+        has_ppt: hasPpt,
+        page,
+        page_size: PAGE_SIZE,
+      }),
     placeholderData: (prev) => prev,
   });
 
@@ -43,7 +56,7 @@ export default function ListView({ onSelectEvent }: Props) {
           // HACKATHON LISTINGS
         </h2>
         <p className="font-mono text-cream-white text-[11px] opacity-50">
-          Aggregated from Devpost + Unstop
+          Aggregated from Devpost · Unstop · HackerEarth
         </p>
       </div>
 
@@ -51,8 +64,10 @@ export default function ListView({ onSelectEvent }: Props) {
       <Filters
         mode={mode}
         query={query}
+        pptFilter={pptFilter}
         onModeChange={(m) => { setMode(m); setPage(1); }}
         onQueryChange={(q) => { setQuery(q); setPage(1); }}
+        onPptChange={(p) => { setPptFilter(p); setPage(1); }}
         total={total}
       />
 
@@ -131,17 +146,27 @@ function EventCard({ event, onClick }: { event: HackEvent; onClick: () => void }
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && onClick()}
     >
-      {/* Top row: source + mode */}
+      {/* Top row: source + mode + ppt badge */}
       <div className="flex items-center justify-between">
         <span className="font-mono text-[9px] uppercase opacity-40 text-cream-white">
           {event.source}
         </span>
-        <span
-          className="font-pixel text-pixel-black text-[7px] px-2 py-0.5"
-          style={{ background: modeColor }}
-        >
-          {(event.mode ?? "online").toUpperCase()}
-        </span>
+        <div className="flex items-center gap-1.5">
+          {event.has_ppt_round && (
+            <span
+              className="font-pixel text-[6px] px-1.5 py-0.5"
+              style={{ background: "#FF2E88", color: "#0B0B0B" }}
+            >
+              📊 PPT
+            </span>
+          )}
+          <span
+            className="font-pixel text-pixel-black text-[7px] px-2 py-0.5"
+            style={{ background: modeColor }}
+          >
+            {(event.mode ?? "online").toUpperCase()}
+          </span>
+        </div>
       </div>
 
       {/* Name */}

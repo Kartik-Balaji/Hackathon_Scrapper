@@ -101,10 +101,10 @@ export default function EventDrawer({ event, onClose }: Props) {
                 </p>
               </div>
 
-              {/* Mode badge */}
+              {/* Mode badge + PPT badge */}
               <div>
                 <Label text="FORMAT" />
-                <div className="mt-1">
+                <div className="mt-1 flex items-center gap-2 flex-wrap">
                   <span
                     className="font-pixel text-pixel-black text-[8px] px-3 py-1"
                     style={{
@@ -113,6 +113,18 @@ export default function EventDrawer({ event, onClose }: Props) {
                   >
                     {(event.mode ?? "online").toUpperCase()}
                   </span>
+                  {event.has_ppt_round && (
+                    <span
+                      className="font-pixel text-[8px] px-3 py-1"
+                      style={{
+                        background: "#FF2E88",
+                        color: "#0B0B0B",
+                        boxShadow: "0 0 8px #FF2E88",
+                      }}
+                    >
+                      📊 PPT ROUND
+                    </span>
+                  )}
                 </div>
               </div>
 

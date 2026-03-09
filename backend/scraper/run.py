@@ -9,10 +9,12 @@ import asyncio
 import sys
 from scraper.devpost import DevpostScraper
 from scraper.unstop import UnstopScraper
+from scraper.hackerearth import HackerEarthScraper
 
 SCRAPERS = {
     "devpost": DevpostScraper,
     "unstop": UnstopScraper,
+    "hackerearth": HackerEarthScraper,
 }
 
 

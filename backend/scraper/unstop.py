@@ -6,6 +6,7 @@ from typing import Optional
 from playwright.async_api import async_playwright, Page
 from scraper.base import BaseScraper
 from scraper.geocoder import geocode
+from app.fetcher import detect_ppt_round
 
 UNSTOP_URL = "https://unstop.com/hackathons"
 
@@ -177,6 +178,8 @@ class UnstopScraper(BaseScraper):
 
         mode = _infer_mode(location_raw)
 
+        has_ppt = detect_ppt_round(name, " ".join(tags), location_raw)
+
         return {
             "source": self.SOURCE,
             "name": name,
@@ -189,6 +192,7 @@ class UnstopScraper(BaseScraper):
             "tags": list(dict.fromkeys(tags))[:8],  # dedupe preserving order
             "latitude": None,
             "longitude": None,
+            "has_ppt_round": has_ppt,
             "status": "active",
         }
 
