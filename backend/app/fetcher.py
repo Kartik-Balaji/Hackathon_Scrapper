@@ -98,13 +98,31 @@ async def _geocode(client: httpx.AsyncClient, location: str) -> tuple[float, flo
     return None
 
 
-async def _fetch_devpost_page(
-    client: httpx.AsyncClient, geo_client: httpx.AsyncClient, page: int
-) -> list[dict]:
+def _parse_devpost_dates(date_str: str) -> tuple[datetime | None, datetime | None]:
+    if not date_str or not isinstance(date_str, str):
+        return None, None
+    try:
+        from dateutil import parser
+        if " - " in date_str:
+            p1, p2 = date_str.split(" - ", 1)
+            end_dt = parser.parse(p2)
+            if "," not in p1:
+                p1 += f", {end_dt.year}"
+            start_dt = parser.parse(p1)
+            return start_dt, end_dt
+        else:
+            dt = parser.parse(date_str)
+            return dt, dt
+    except Exception as e:
+        print(f"[Devpost] Skipping date parse error: {e}")
+        return None, None
+
+
+async def _fetch_devpost_page(client: httpx.AsyncClient, geo_client: httpx.AsyncClient, page: int) -> list[dict]:
     params = {
         "status[]": ["upcoming", "open"],
         "order_by": "deadline",
-        "per_page": 24,
+        "per_page": 100,
         "page": page,
     }
     try:
@@ -128,12 +146,12 @@ async def _fetch_devpost_page(
                 lat, lon = coords
             await asyncio.sleep(1.1)  # Nominatim rate limit
 
-        # Extract submission dates from the nested structure
-        dates = h.get("submission_period_dates") or {}
-        if not isinstance(dates, dict):
-            dates = {}
-        start_date = _parse_date(dates.get("start") or h.get("open_state_at"))
-        end_date   = _parse_date(dates.get("end")   or h.get("submission_period_end_at"))
+        # Extract submission dates from string like "Feb 02 - Mar 16, 2026"
+        dates_str = h.get("submission_period_dates")
+        if isinstance(dates_str, str):
+            start_date, end_date = _parse_devpost_dates(dates_str)
+        else:
+            start_date, end_date = None, None
 
         tags = [t.get("name") or t.get("slug", "") if isinstance(t, dict) else str(t) for t in h.get("themes", [])]
         tags = [t.title() for t in tags if t][:8]

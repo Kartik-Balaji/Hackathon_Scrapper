@@ -60,13 +60,18 @@ class HackerEarthScraper(BaseScraper):
                 print(f"[HackerEarth] API error: {e}")
                 return []
 
-        # HE returns a dict with "hackathon" and "challenge" keys
-        raw_events = data.get("response", {})
-        hackathons = raw_events.get("hackathon", [])
-        challenges = raw_events.get("challenge", [])
-        all_items = hackathons + challenges
+        # HE returns a list directly in "response"
+        raw_events = data.get("response", [])
+        if isinstance(raw_events, dict):
+            hackathons = raw_events.get("hackathon", [])
+            challenges = raw_events.get("challenge", [])
+            all_items = hackathons + challenges
+        elif isinstance(raw_events, list):
+            all_items = raw_events
+        else:
+            all_items = []
 
-        print(f"[HackerEarth] Found {len(hackathons)} hackathons + {len(challenges)} challenges")
+        print(f"[HackerEarth] Found {len(all_items)} events")
 
         async with httpx.AsyncClient() as geo_client:
             for item in all_items:
