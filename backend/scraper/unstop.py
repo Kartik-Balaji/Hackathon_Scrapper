@@ -87,7 +87,7 @@ class UnstopScraper(BaseScraper):
         events: list[dict] = []
         seen_ids: set[int] = set()
 
-        async with httpx.AsyncClient(headers=HEADERS, timeout=20, follow_redirects=True) as client:
+        async with httpx.AsyncClient(http2=True, headers=HEADERS, timeout=20, follow_redirects=True) as client:
             for page in range(1, MAX_PAGES + 1):
                 params = {**BASE_PARAMS, "page": page}
                 try:
