@@ -221,8 +221,7 @@ async def fetch_all_events() -> list[dict]:
     unstop_events: list[dict] = []
     try:
         from scraper.unstop import UnstopScraper
-        async with UnstopScraper() as us_scraper:
-            unstop_events = await us_scraper.scrape()
+        unstop_events = await UnstopScraper().scrape()
         print(f"[Fetcher] Unstop: {len(unstop_events)} events")
     except Exception as e:
         print(f"[Fetcher] Unstop failed (non-fatal): {e}")
@@ -231,8 +230,7 @@ async def fetch_all_events() -> list[dict]:
     hackerearth_events: list[dict] = []
     try:
         from scraper.hackerearth import HackerEarthScraper
-        async with HackerEarthScraper() as he_scraper:
-            hackerearth_events = await he_scraper.scrape()
+        hackerearth_events = await HackerEarthScraper().scrape()
         print(f"[Fetcher] HackerEarth: {len(hackerearth_events)} events")
     except Exception as e:
         print(f"[Fetcher] HackerEarth failed (non-fatal): {e}")
