@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAllGlobeEvents, fetchAllListEvents, fetchMeta, HackEvent } from "@/lib/api";
+import { fetchAllGlobeEvents, fetchMeta, HackEvent } from "@/lib/api";
 import LandingScene from "@/components/LandingScene";
 import EventDrawer from "@/components/EventDrawer";
 
@@ -11,12 +11,6 @@ export default function Home() {
   const { data: globeEvents = [] } = useQuery({
     queryKey: ["globe-events"],
     queryFn: fetchAllGlobeEvents,
-    staleTime: 5 * 60_000,
-  });
-
-  const { data: listEvents = [] } = useQuery({
-    queryKey: ["list-events"],
-    queryFn: fetchAllListEvents,
     staleTime: 5 * 60_000,
   });
 
@@ -30,7 +24,6 @@ export default function Home() {
     <main>
       <LandingScene
         events={globeEvents}
-        listEvents={listEvents}
         onSelectEvent={setSelectedEvent}
         lastUpdated={meta?.last_scrape_time}
       />

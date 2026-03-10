@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
-import { HackEvent } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { HackEvent, fetchEvents } from "@/lib/api";
 import { useTheme } from "@/context/ThemeContext";
 
 const GlobeView = dynamic(() => import("./GlobeView"), { ssr: false });
@@ -10,7 +11,6 @@ const GlobeView = dynamic(() => import("./GlobeView"), { ssr: false });
 // ── Types ───────────────────────────────────────────────────────────────────
 interface Props {
   events: HackEvent[];      // lat/lng-filtered, used for GlobeView
-  listEvents?: HackEvent[]; // all events (incl. online-only), used for ChannelList
   onSelectEvent: (event: HackEvent) => void;
   lastUpdated?: string | null;
 }
@@ -299,8 +299,13 @@ function ChanBtn({
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
-export default function LandingScene({ events, listEvents, onSelectEvent, lastUpdated }: Props) {
-  const allEvents = listEvents && listEvents.length > 0 ? listEvents : events;
+export default function LandingScene({ events, onSelectEvent, lastUpdated }: Props) {
+  const { data: listData } = useQuery({
+    queryKey: ["landing-list"],
+    queryFn: () => fetchEvents({ page_size: 200 }),
+    staleTime: 5 * 60_000,
+  });
+  const allEvents = listData?.events ?? events;
   const [channel, setChannel] = useState(1);
   const [flashing, setFlashing] = useState(false);
 

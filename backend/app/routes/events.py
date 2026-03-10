@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Query
 from app import crud
 from app.schemas import EventsResponse, MetaResponse
+from app.models import EventOut
 
 router = APIRouter()
 
@@ -24,6 +25,19 @@ async def list_events(
         page_size=page_size,
         last_updated=meta["last_scrape_time"],
     )
+
+
+@router.get("/globe", response_model=List[EventOut])
+async def globe_events():
+    """Return ALL geolocated events (lat+lon set) for the 3-D globe — no pagination."""
+    await crud.cache.ensure_fresh()
+    all_events = crud.cache.get_events_raw()
+    geo_events = [
+        EventOut(**{k: v for k, v in ev.items() if k in EventOut.model_fields})
+        for ev in all_events
+        if ev.get("latitude") is not None and ev.get("longitude") is not None
+    ]
+    return geo_events
 
 
 @router.get("/meta", response_model=MetaResponse)

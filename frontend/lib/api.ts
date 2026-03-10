@@ -63,13 +63,7 @@ export async function fetchMeta(): Promise<MetaResponse> {
 }
 
 export async function fetchAllGlobeEvents(): Promise<HackEvent[]> {
-  // Fetch all events with lat/lng for the globe (up to 200)
-  const res = await fetchEvents({ page_size: 200 });
-  return res.events.filter((e) => e.latitude !== null && e.longitude !== null);
-}
-
-export async function fetchAllListEvents(): Promise<HackEvent[]> {
-  // Fetch all events for the list view (no lat/lng filter — includes online-only events)
-  const res = await fetchEvents({ page_size: 200 });
-  return res.events;
+  const res = await fetch(`${BASE}/api/globe`, { next: { revalidate: 300 } });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
 }
